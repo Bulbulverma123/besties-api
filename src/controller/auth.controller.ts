@@ -9,8 +9,8 @@ import { downloadObject } from '../util/s3'
 import {v4 as uuid} from 'uuid'
 import moment from 'moment'
 
-const accessTokenExpiry = '10min'
-const tenMinuteInMs = (10 * 60)*1000 
+const accessTokenExpiry = '7d'
+const tenMinuteInMs = (7*24*60*60)*1000 
 const sevenDaysInMs = (7*24*60*60)*1000
 
 type TokenType = "at" | "rt"
@@ -25,13 +25,25 @@ const generateToken = (payload: PayloadInterface) => {
  }
 }
 
-const getOptions = (tokenType: TokenType)=>{
-    return {
-        httpOnly: true,
-        maxAge: tokenType === "at" ? tenMinuteInMs : sevenDaysInMs ,
-        secure: false,
-        domain: 'localhost'
-      }
+// const getOptions = (tokenType: TokenType)=>{
+//     return {
+//         httpOnly: true,
+//             maxAge: tokenType === "at" ? tenMinuteInMs : sevenDaysInMs,
+//             secure: process.env.NODE_ENV === "dev" ? false : true,
+//             samesite: 'none',
+//             domain: process.env.NODE_ENV === "dev" ? "localhost" : process.env.CLIENT!.split("//").pop()
+//       }
+// }
+
+const getOptions = (tokenType: TokenType) => {
+  const isProd = process.env.NODE_ENV !== "dev"
+  return {
+    httpOnly: true,
+    maxAge: tokenType === "at" ? tenMinuteInMs : sevenDaysInMs,
+    secure: isProd,
+    sameSite: isProd ? "none" as const : "lax" as const,
+    ...(isProd ? {} : { domain: "localhost" })
+  }
 }
 
 export const signup = async(req: Request, res: Response) =>{
@@ -142,13 +154,34 @@ export const updateProfilePicture = async(req: SessionInterface, res: Response) 
     }
 }
 
+// export const logout = async(req:Request, res: Response) =>{
+//     try{
+//       const options = {
+//         httpOnly: true,
+//         maxAge: 0,
+//         secure: false,
+//         domain: 'localhost'
+//       }
+//         res.clearCookie("accessToken", options)
+//         res.clearCookie("refreshToken", options)
+//         res.json({message: "Logout success"})
+
+//     }
+//     catch(err)
+//     {
+//       CatchError(err, res, "Failed to update profile picture ")  
+//     }
+// }
+
 export const logout = async(req:Request, res: Response) =>{
     try{
+      const isProd = process.env.NODE_ENV !== "dev"
       const options = {
         httpOnly: true,
         maxAge: 0,
-        secure: false,
-        domain: 'localhost'
+        secure: isProd,
+        sameSite: isProd ? "none" as const : "lax" as const,
+        ...(isProd ? {} : { domain: "localhost" })
       }
         res.clearCookie("accessToken", options)
         res.clearCookie("refreshToken", options)
