@@ -1,0 +1,13 @@
+ onlineUsers.set(socket.id, {id: socket.id, status:'online'})
+
+          io.emit("online",  Array.from(onlineUsers.values()))
+
+          socket.on("get-online", ()=>{
+           io.emit("online",  Array.from(onlineUsers.values()))
+           })
+
+          socket.on("disconnect", ()=>{
+          onlineUsers.set(socket.id, {id: socket.id, status:'offline'})
+          io.emit("online",  Array.from(onlineUsers.values()))
+       
+         })
