@@ -20,15 +20,20 @@ const StatusSocket =(io: Server)=>{
           socket.join(user.id)
 
          
-          io.emit("online", Array.from(onlineUsers.values()))
+          const getUniqueUsers = () => {
+             const users = Array.from(onlineUsers.values())
+             return Array.from(new Map(users.map(u => [String(u.id), u])).values())
+          }
+
+          io.emit("online", getUniqueUsers())
 
           socket.on("get-online", ()=>{
-             io.emit("online", Array.from(onlineUsers.values()))
+             io.emit("online", getUniqueUsers())
           })
 
           socket.on("disconnect", ()=>{
              onlineUsers.delete(socket.id)
-             io.emit("online", Array.from(onlineUsers.values()))
+             io.emit("online", getUniqueUsers())
           })
       }
       catch(err)

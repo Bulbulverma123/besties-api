@@ -125,7 +125,9 @@ export const refreshToken = async(req: SessionInterface, res: Response) =>{
 
 export const getSession = async(req: Request, res: Response) =>{
     try{
-        const accessToken =  req.cookies.accessToken
+        const authHeader = req.headers.authorization
+        const bearerToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null
+        const accessToken = req.cookies.accessToken || bearerToken
          if(!accessToken)
             throw  TryError("Invalid session", 401)
 

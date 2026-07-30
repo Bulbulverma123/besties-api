@@ -17,7 +17,9 @@ import mongoose from  'mongoose'
 
 const AuthMiddleware =async (req: SessionInterface, res: Response, next:NextFunction)=>{
   try{
-      const accessToken =  req.cookies.accessToken
+      const authHeader = req.headers.authorization
+      const bearerToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null
+      const accessToken = req.cookies.accessToken || bearerToken
      
       if(!accessToken)
         throw TryError("Failed to authorize user", 401)
