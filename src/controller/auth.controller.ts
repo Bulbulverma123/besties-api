@@ -93,7 +93,7 @@ export const login = async (req: Request, res: Response) =>{
       
       res.cookie("accessToken", accessToken, getOptions('at'))
       res.cookie("refreshToken", refreshToken, getOptions('rt')) 
-      res.json({message: "Login success"})
+      res.json({message: "Login success", accessToken})
    }
    catch(err :unknown)
    {

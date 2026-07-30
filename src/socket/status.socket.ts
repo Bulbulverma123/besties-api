@@ -10,7 +10,7 @@ const StatusSocket =(io: Server)=>{
       try{
         const rowCookie =  socket.handshake.headers.cookie || ""
         const cookies = cookie.parse(rowCookie)
-        const accessToken = cookies.accessToken
+        const accessToken = cookies.accessToken || socket.handshake.auth?.token || socket.handshake.query?.token
 
         if(!accessToken)
           throw new Error("Access token not found")
