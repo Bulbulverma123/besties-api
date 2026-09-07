@@ -40,15 +40,25 @@ export const downloadObject = async(path: string, expiry: number =60) =>{
           return url
 }
 
- export const uploadObject = async(path: string , type:string, acl: ACLType ="private") =>{
+ export const uploadObject = async(path: string , type:string, _acl: ACLType ="private") =>{
      const command = new PutObjectCommand({
             Bucket: process.env.S3_BUCKET,
             Key: path,
-            ContentType: type,
-              ACL : acl
+            ContentType: type
          })
         const url = await getSignedUrl(conn,command,{expiresIn: 60})
         return url
+}
+
+export const uploadDirect = async(path: string, buffer: Buffer, type: string) => {
+    const command = new PutObjectCommand({
+        Bucket: process.env.S3_BUCKET,
+        Key: path,
+        Body: buffer,
+        ContentType: type
+    })
+    await conn.send(command)
+    return `https://${process.env.S3_BUCKET}.s3.${process.env.REGION || 'ap-southeast-1'}.amazonaws.com/${path}`
 }
 
 
