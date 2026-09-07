@@ -155,7 +155,11 @@ export const webhook = async (req: Request, res:  Response)=>{
         if(signature !== generateSignature)
             throw TryError("Invalid request", 400)
 
-        fs.writeFileSync("payment.json", JSON.stringify(body, null, 2))
+        try {
+            fs.writeFileSync("payment.json", JSON.stringify(body, null, 2))
+        } catch (e) {
+            console.warn("Webhook file save skipped:", e)
+        }
 
         if(body.event === "payment.authorized" && process.env.NODE_ENV === "dev")
         {

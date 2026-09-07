@@ -29,16 +29,18 @@ export const fetchFriends = async (req: SessionInterface, res: Response) => {
       .populate('friend')
       .populate('user')
 
-   const modified = friends.map((item: any) => {
-      const isUser = item.user._id.toString() === userId
-      return {
-        _id: item._id,
-        friend: isUser ? item.friend : item.user,
-        status: item.status,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAd
-      }
-    })
+   const modified = friends
+      .filter((item: any) => item.user && item.friend)
+      .map((item: any) => {
+        const isUser = item.user._id.toString() === userId?.toString()
+        return {
+          _id: item._id,
+          friend: isUser ? item.friend : item.user,
+          status: item.status,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt
+        }
+      })
 
     res.json(modified)
   }
