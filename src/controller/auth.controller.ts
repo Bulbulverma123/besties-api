@@ -145,7 +145,15 @@ export const updateProfilePicture = async(req: SessionInterface, res: Response) 
         if(!req.session)
             throw TryError("Failed to update Profile picture", 400)
 
-        const imagePath = req.body.path ? `${process.env.S3_URL}/${req.body.path}` : null
+        let imagePath = null
+        if (req.body.path) {
+          if (req.body.path.startsWith('http://') || req.body.path.startsWith('https://')) {
+            imagePath = req.body.path
+          } else {
+            const s3Base = (process.env.S3_URL || `https://${process.env.S3_BUCKET || 'besties-aws'}.s3.${process.env.REGION || 'ap-southeast-1'}.amazonaws.com`).replace(/\/$/, '')
+            imagePath = `${s3Base}/${req.body.path.replace(/^\//, '')}`
+          }
+        }
 
          await AuthModel.updateOne({_id: req.session.id}, {$set: {image: imagePath}})
         
