@@ -106,7 +106,19 @@ export const refreshToken = async(req: SessionInterface, res: Response) =>{
       if(!req.session)
         throw TryError("Failed to refresh token", 401) 
 
-        const {accessToken, refreshToken} = generateToken(req.session)
+        const user = await AuthModel.findById(req.session.id)
+        if (!user)
+          throw TryError("User not found", 404)
+
+        const payload = {
+          id: user._id,
+          fullname: user.fullname,
+          email: user.email,
+          mobile: user.mobile,
+          image: user.image ?? null
+        }
+
+        const {accessToken, refreshToken} = generateToken(payload)
         
         await AuthModel.updateOne({_id: req.session.id}, {$set: {
           refreshToken,
@@ -115,7 +127,7 @@ export const refreshToken = async(req: SessionInterface, res: Response) =>{
 
       res.cookie("accessToken", accessToken, getOptions('at'))
       res.cookie("refreshToken", refreshToken, getOptions('rt')) 
-      res.json({message: "Token refreshed"})
+      res.json({message: "Token refreshed", accessToken, user: payload})
     }
     catch(err)
     {
